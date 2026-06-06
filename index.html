@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swing House — Airport Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Montserrat+Alternates:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sh-dark-green: #005235;
+    --sh-beige: #f0ece5;
+    --sh-light-green: #6a714a;
+    --sh-pale-green: #aeae8b;
+    --sh-orange: #e8562a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    background: #1a1a1a;
+    color: var(--sh-beige);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* DECK CONTAINER */
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    z-index: 1;
+  }
+
+  /* NAVIGATION */
+  .nav {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(0,82,53,0.3);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(240,236,229,0.15);
+    padding: 12px 24px;
+    border-radius: 40px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--sh-beige);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 12px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+  .nav-btn:hover { opacity: 1; }
+  .nav-btn:disabled { opacity: 0.2; cursor: default; }
+
+  .nav-counter {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .nav-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(240,236,229,0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dot.active {
+    background: var(--sh-orange);
+    width: 20px;
+    border-radius: 3px;
+  }
+
+  /* SLIDE LAYOUT HELPERS */
+  .slide-full {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px;
+  }
+
+  .slide-split {
+    flex-direction: row;
+  }
+
+  .col-left {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .col-right {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* LABEL/TAG */
+  .label {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sh-orange);
+    margin-bottom: 16px;
+  }
+
+  .label-light {
+    color: var(--sh-pale-green);
+  }
+
+  /* HEADINGS */
+  h1 {
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: clamp(18px, 2.5vw, 28px);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .body {
+    font-size: clamp(13px, 1.4vw, 16px);
+    font-weight: 400;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  .accent { color: var(--sh-orange); }
+  .muted { color: var(--sh-pale-green); }
+
+  /* DIVIDER */
+  .divider {
+    width: 48px;
+    height: 3px;
+    background: var(--sh-orange);
+    margin: 24px 0;
+  }
+
+  /* BIG NUMBER */
+  .stat-block {
+    margin-top: 12px;
+  }
+  .stat-num {
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 900;
+    color: var(--sh-orange);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    margin-top: 4px;
+  }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  th {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(240,236,229,0.1);
+  }
+  td {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(240,236,229,0.06);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 700; color: var(--sh-beige); }
+  td:not(:first-child) { color: rgba(240,236,229,0.75); font-size: 12px; }
+
+  /* CARD */
+  .card {
+    background: rgba(240,236,229,0.05);
+    border: 1px solid rgba(240,236,229,0.1);
+    border-radius: 4px;
+    padding: 24px 28px;
+  }
+
+  .card-highlight {
+    background: var(--sh-dark-green);
+    border: none;
+    padding: 24px 28px;
+    border-radius: 4px;
+  }
+
+  .card-orange {
+    border-left: 3px solid var(--sh-orange);
+    background: rgba(232,86,42,0.06);
+    padding: 20px 24px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* GRID */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  /* LOGO SVG inline */
+  .logo-svg {
+    margin-bottom: 40px;
+  }
+
+  /* PIXEL ICON */
+  .pixel-icon {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .progress-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    width: 120px;
+    flex-shrink: 0;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(240,236,229,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--sh-orange);
+    border-radius: 2px;
+  }
+  .progress-val {
+    font-size: 12px;
+    font-weight: 700;
+    width: 40px;
+    text-align: right;
+    color: var(--sh-orange);
+  }
+
+  /* TIMELINE */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin-top: 8px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: rgba(240,236,229,0.15);
+  }
+  .tl-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sh-orange);
+  }
+  .tl-item.muted-item::before {
+    background: var(--sh-pale-green);
+  }
+  .tl-date {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sh-orange);
+    margin-bottom: 4px;
+  }
+  .tl-item.muted-item .tl-date {
+    color: var(--sh-pale-green);
+  }
+  .tl-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .tl-body {
+    font-size: 12px;
+    opacity: 0.65;
+    line-height: 1.5;
+  }
+
+  /* BADGE ROW */
+  .badge {
+    display: inline-block;
+    background: var(--sh-orange);
+    color: var(--sh-beige);
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  .badge-outline {
+    background: transparent;
+    border: 1px solid var(--sh-pale-green);
+    color: var(--sh-pale-green);
+  }
+
+  /* TWO-COL CONTENT LIST */
+  .check-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .check-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(232,86,42,0.15);
+    border: 1px solid var(--sh-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--sh-orange);
+    font-weight: 700;
+  }
+  .check-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+  .check-text span {
+    font-size: 12px;
+    opacity: 0.65;
+    line-height: 1.5;
+  }
+
+  /* ============================================================
+     SLIDES SPECIFIC STYLES
+  ============================================================ */
+
+  /* SLIDE 1 — COVER */
+  #s1 {
+    background: var(--sh-dark-green);
+    flex-direction: row;
+  }
+  .s1-left {
+    flex: 1.1;
+    background: var(--sh-dark-green);
+    padding: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .s1-right {
+    flex: 0.9;
+    background: var(--sh-beige);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .s1-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,82,53,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,82,53,0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .s1-visual {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+  .s1-big-label {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--sh-light-green);
+    margin-bottom: 24px;
+  }
+  .runway {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 32px;
+  }
+  .runway-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--sh-orange);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .runway-dot:nth-child(2) { animation-delay: 0.3s; background: var(--sh-dark-green); }
+  .runway-dot:nth-child(3) { animation-delay: 0.6s; background: var(--sh-dark-green); }
+  .runway-dot:nth-child(4) { animation-delay: 0.9s; background: var(--sh-dark-green); }
+  .runway-dot:nth-child(5) { animation-delay: 1.2s; background: var(--sh-dark-green); }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.5); opacity: 1; }
+  }
+
+  /* SLIDE 2 — CONCEPT */
+  #s2 { background: var(--sh-beige); color: var(--sh-dark-green); }
+  #s2 .label { color: var(--sh-orange); }
+  #s2 .muted { color: var(--sh-light-green); }
+  #s2 .divider { background: var(--sh-dark-green); }
+  #s2 .body { color: var(--sh-dark-green); }
+  #s2 td:first-child { color: var(--sh-dark-green); }
+  #s2 td:not(:first-child) { color: var(--sh-light-green); }
+  #s2 th { color: var(--sh-light-green); border-bottom-color: rgba(0,82,53,0.15); }
+  #s2 tr td { border-bottom-color: rgba(0,82,53,0.08); }
+  .s2-pill {
+    display: inline-block;
+    background: var(--sh-dark-green);
+    color: var(--sh-beige);
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  /* SLIDE 3 — MARKET */
+  #s3 { background: #0a1f18; }
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .hub-card {
+    background: rgba(0,82,53,0.25);
+    border: 1px solid rgba(0,82,53,0.5);
+    border-radius: 4px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hub-card.tier1 {
+    border-color: rgba(232,86,42,0.4);
+    background: rgba(232,86,42,0.06);
+  }
+  .hub-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--sh-orange);
+    opacity: 0;
+  }
+  .hub-card.tier1::before { opacity: 1; }
+  .hub-name {
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .hub-sub {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    margin-bottom: 12px;
+  }
+  .hub-stat {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--sh-orange);
+    line-height: 1;
+  }
+  .hub-stat-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    margin-top: 2px;
+  }
+  .tier-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .tier-badge.t1 { background: var(--sh-orange); color: var(--sh-beige); }
+  .tier-badge.t2 { background: rgba(240,236,229,0.1); color: var(--sh-pale-green); }
+
+  /* SLIDE 4 — FORMAT */
+  #s4 { background: var(--sh-dark-green); }
+  .format-visual {
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    padding: 28px;
+    margin-top: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .format-row {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+  .format-cell {
+    height: 28px;
+    border-radius: 2px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .cell-sim { background: rgba(232,86,42,0.7); color: white; }
+  .cell-bar { background: rgba(174,174,139,0.3); color: var(--sh-pale-green); }
+  .cell-tv  { background: rgba(0,82,53,0.8); color: var(--sh-beige); border: 1px solid rgba(240,236,229,0.2); }
+  .cell-empty { background: transparent; }
+
+  /* SLIDE 5 — ECONOMICS */
+  #s5 { background: #0d1a15; }
+  .model-tab {
+    display: inline-block;
+    padding: 8px 20px;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px 2px 0 0;
+    border: 1px solid rgba(240,236,229,0.1);
+    border-bottom: none;
+    margin-right: 4px;
+    transition: all 0.2s;
+  }
+  .model-tab.active {
+    background: var(--sh-dark-green);
+    border-color: var(--sh-dark-green);
+    color: var(--sh-beige);
+  }
+  .model-tab:not(.active) {
+    color: var(--sh-pale-green);
+    background: transparent;
+  }
+  .model-content {
+    background: var(--sh-dark-green);
+    border-radius: 0 4px 4px 4px;
+    padding: 28px;
+  }
+  .model-panel { display: none; }
+  .model-panel.active { display: block; }
+  .econ-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(240,236,229,0.08);
+    font-size: 13px;
+  }
+  .econ-row:last-child { border-bottom: none; }
+  .econ-key { font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; }
+  .econ-val { font-weight: 700; color: var(--sh-orange); }
+  .econ-val.green { color: #4caf8a; }
+
+  /* SLIDE 6 — OPERATORS */
+  #s6 { background: var(--sh-beige); color: var(--sh-dark-green); }
+  #s6 .label { color: var(--sh-orange); }
+  #s6 .body { color: var(--sh-dark-green); opacity: 0.85; }
+  .operator-card {
+    background: var(--sh-dark-green);
+    color: var(--sh-beige);
+    border-radius: 4px;
+    padding: 24px;
+    height: 100%;
+  }
+  .op-name {
+    font-size: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .op-meta {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    margin-bottom: 14px;
+  }
+  .op-body {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(240,236,229,0.75);
+  }
+  .op-tag {
+    display: inline-block;
+    background: rgba(232,86,42,0.2);
+    color: var(--sh-orange);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-top: 12px;
+  }
+
+  /* SLIDE 7 — ROADMAP */
+  #s7 { background: var(--sh-dark-green); }
+
+  /* SLIDE 8 — CLOSE */
+  #s8 {
+    background: var(--sh-dark-green);
+    flex-direction: row;
+  }
+  .s8-left {
+    flex: 1;
+    padding: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .s8-right {
+    width: 280px;
+    background: rgba(0,0,0,0.2);
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    border-left: 1px solid rgba(240,236,229,0.08);
+  }
+  .contact-item strong {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sh-pale-green);
+    margin-bottom: 4px;
+  }
+  .contact-item span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- ============================
+       SLIDE 1 — COVER
+  ============================= -->
+  <div class="slide active" id="s1">
+    <div class="s1-left">
+      <div>
+        <!-- Logo text-based -->
+        <div style="margin-bottom: 48px;">
+          <div style="font-size: 11px; font-family: 'Montserrat Alternates', sans-serif; font-weight: 500; letter-spacing: 0.25em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 8px;">Swing House</div>
+          <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--sh-beige);">CHX — Golf — Indoor</div>
+        </div>
+
+        <div class="label" style="margin-bottom: 20px;">Concept Development / 2026</div>
+        <h1 style="color: var(--sh-beige); font-size: clamp(52px, 6vw, 84px);">
+          Airport<br>
+          <span style="color: var(--sh-orange);">Concept.</span>
+        </h1>
+        <div class="divider" style="margin-top: 32px; margin-bottom: 32px;"></div>
+        <p class="body" style="max-width: 380px; font-size: 15px; line-height: 1.7;">
+          Bringing premium indoor golf to the world's major international hubs — a new revenue model, a global brand footprint.
+        </p>
+        <p style="margin-top: 8px; font-size: 13px; color: var(--sh-pale-green); font-style: italic;">Amener le golf indoor premium dans les grands hubs internationaux — un nouveau modèle de revenus, une empreinte mondiale.</p>
+      </div>
+      <div style="font-size: 11px; color: var(--sh-pale-green); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;">Confidential — For Partnership Discussion Only</div>
+    </div>
+
+    <div class="s1-right">
+      <div class="s1-grid"></div>
+      <div class="s1-visual">
+        <div style="font-size: 120px; line-height: 1; margin-bottom: 16px;">✈</div>
+        <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sh-dark-green); margin-bottom: 8px;">Global Hubs</div>
+        <div style="font-size: 11px; color: var(--sh-light-green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 24px;">IST · DXB · DOH · SIN · LHR</div>
+        <div class="runway">
+          <div class="runway-dot" style="animation-delay: 0s;"></div>
+          <div class="runway-dot" style="animation-delay: 0.2s;"></div>
+          <div class="runway-dot" style="animation-delay: 0.4s;"></div>
+          <div class="runway-dot" style="animation-delay: 0.6s;"></div>
+          <div class="runway-dot" style="animation-delay: 0.8s;"></div>
+          <div class="runway-dot" style="animation-delay: 1.0s; background: var(--sh-orange) !important;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 2 — THE CONCEPT
+  ============================= -->
+  <div class="slide" id="s2">
+    <div class="col-left">
+      <div class="label">The Concept / Le Concept</div>
+      <h2 style="color: var(--sh-dark-green);">Golf. Bar.<br><span style="color: var(--sh-orange);">30 minutes.</span></h2>
+      <div class="divider"></div>
+      <p class="body" style="max-width: 400px; margin-bottom: 8px;">
+        Swing House Airport is a self-contained experiential unit designed for international terminal environments. No golf knowledge required. No club membership. Just play.
+      </p>
+      <p style="font-size: 12px; color: var(--sh-light-green); line-height: 1.6; max-width: 400px; margin-bottom: 24px; font-style: italic;">
+        Un format autonome conçu pour les terminaux internationaux. Accessible à tous, premium par nature.
+      </p>
+      <div>
+        <span class="s2-pill">TrackMan Technology</span>
+        <span class="s2-pill">Bar & Live Sport</span>
+        <span class="s2-pill">30 min / 1h Sessions</span>
+        <span class="s2-pill">No Membership</span>
+      </div>
+    </div>
+    <div class="col-right" style="background: var(--sh-dark-green); border-radius: 4px; margin: 32px 32px 32px 0; padding: 40px;">
+      <div class="label label-light">Format Details</div>
+      <div style="display: flex; flex-direction: column; gap: 0;">
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 8px 0; border-bottom: 1px solid rgba(240,236,229,0.15); margin-bottom: 4px;">
+          <span style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green);">Element</span>
+          <span style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green);">Spec</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08);">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Footprint</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">70–100 m², 2 simulators min.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08);">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Session</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">30 min or 1h — self-service kiosk</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08); background: rgba(232,86,42,0.08); margin: 0 -4px; padding-left: 4px; padding-right: 4px;">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-orange);">Pricing</span>
+          <span style="font-size: 14px; font-weight: 700; color: var(--sh-orange);">€40 / 30 min &nbsp;·&nbsp; €80 / 1h</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08);">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Hours</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">Terminal hours, 18/7</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08);">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Bar Area</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">Integrated, 10–20 seats</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0; border-bottom: 1px solid rgba(240,236,229,0.08);">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Technology</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">TrackMan io</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; padding: 12px 0;">
+          <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sh-beige);">Languages</span>
+          <span style="font-size: 13px; font-weight: 500; color: rgba(240,236,229,0.8);">EN / FR + local</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 3 — TARGET HUBS
+  ============================= -->
+  <div class="slide" id="s3">
+    <div style="padding: 56px; width: 100%;">
+      <div class="label">Target Markets / Marchés Cibles</div>
+      <h2>Priority Hubs</h2>
+      <p class="body" style="margin-top: 8px; max-width: 600px; margin-bottom: 8px;">International hubs with 4h+ average transit, premium passenger profile, and strong F&B concession infrastructure.</p>
+
+      <div class="hub-grid">
+        <div class="hub-card tier1">
+          <span class="tier-badge t1">Tier 1</span>
+          <div class="hub-name">Istanbul IST</div>
+          <div class="hub-sub">Turkish Airlines Hub</div>
+          <div class="hub-stat">85M+</div>
+          <div class="hub-stat-label">Passengers/year</div>
+          <div style="margin-top: 12px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.5;">Long transit (MENA/Asia connections), premium lounge culture, ISG investing heavily in passenger experience.</div>
+        </div>
+        <div class="hub-card tier1">
+          <span class="tier-badge t1">Tier 1</span>
+          <div class="hub-name">Dubai DXB</div>
+          <div class="hub-sub">Emirates Hub</div>
+          <div class="hub-stat">87M+</div>
+          <div class="hub-stat-label">Passengers/year</div>
+          <div style="margin-top: 12px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.5;">Ultra-premium clientele, leisure spend culture, strong appetite for experiential F&B beyond traditional retail.</div>
+        </div>
+        <div class="hub-card tier1">
+          <span class="tier-badge t1">Tier 1</span>
+          <div class="hub-name">Doha DOH</div>
+          <div class="hub-sub">Qatar Airways Hub</div>
+          <div class="hub-stat">45M+</div>
+          <div class="hub-stat-label">Passengers/year</div>
+          <div style="margin-top: 12px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.5;">Hamad International: benchmark for passenger experience globally. Strong leisure investment philosophy.</div>
+        </div>
+        <div class="hub-card">
+          <span class="tier-badge t2">Tier 2</span>
+          <div class="hub-name">Singapore SIN</div>
+          <div class="hub-sub">Changi Airport</div>
+          <div class="hub-stat">65M+</div>
+          <div class="hub-stat-label">Passengers/year</div>
+          <div style="margin-top: 12px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.5;">World's best airport consistently. Already hosts experiential activations. Gold standard for concept validation.</div>
+        </div>
+        <div class="hub-card">
+          <span class="tier-badge t2">Tier 2</span>
+          <div class="hub-name">London LHR</div>
+          <div class="hub-sub">British Airways Hub — T5</div>
+          <div class="hub-stat">62M+</div>
+          <div class="hub-stat-label">Passengers/year</div>
+          <div style="margin-top: 12px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.5;">UK golf culture + business traveller profile. T5 premium demographic aligns perfectly with Swing House positioning.</div>
+        </div>
+        <div class="hub-card" style="border-style: dashed; opacity: 0.6;">
+          <span class="tier-badge t2">Future</span>
+          <div class="hub-name">+ Expansion</div>
+          <div class="hub-sub">Phase 2 Targets</div>
+          <div style="margin-top: 20px; font-size: 11px; color: rgba(240,236,229,0.6); line-height: 1.8;">
+            Frankfurt FRA<br>
+            Amsterdam AMS<br>
+            Tokyo HND/NRT<br>
+            New York JFK T4
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 4 — UNIT FORMAT
+  ============================= -->
+  <div class="slide" id="s4">
+    <div class="col-left" style="padding: 56px;">
+      <div class="label">Unit Design</div>
+      <h2>The Airport Unit</h2>
+      <div class="divider"></div>
+
+      <div class="check-item">
+        <div class="check-icon">1</div>
+        <div class="check-text">
+          <strong>Simulator Zone</strong>
+          <span>2 TrackMan io units minimum. Self-service booking kiosk. 30-min or 1h slots. Max 1 staff required for operation.</span>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon">2</div>
+        <div class="check-text">
+          <strong>Bar & Screen Area</strong>
+          <span>10–20 seats. Live sport on screens. Full bar service. Accessible without simulator booking — independent revenue stream.</span>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon">3</div>
+        <div class="check-text">
+          <strong>Brand Experience</strong>
+          <span>Full Swing House visual identity. Merchandise point. Photo moment designed for social sharing.</span>
+        </div>
+      </div>
+      <div class="check-item">
+        <div class="check-icon">4</div>
+        <div class="check-text">
+          <strong>Modular Footprint</strong>
+          <span>70–100 m² minimum (2 sims + bar). Scalable to 120 m². Adapts to available terminal space.</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-right" style="padding: 56px 56px 56px 0;">
+      <div style="background: rgba(0,0,0,0.2); border-radius: 4px; padding: 32px;">
+        <div class="label label-light" style="margin-bottom: 20px;">Space Allocation — 100m² Unit</div>
+
+        <div class="format-visual" style="padding: 20px;">
+          <div class="format-row">
+            <div class="format-cell cell-sim" style="flex: 2; height: 60px; font-size: 11px;">Simulator 1<br><span style="font-size: 9px; opacity: 0.8;">TrackMan io</span></div>
+            <div class="format-cell cell-sim" style="flex: 2; height: 60px; font-size: 11px;">Simulator 2<br><span style="font-size: 9px; opacity: 0.8;">TrackMan io</span></div>
+          </div>
+          <div class="format-row" style="margin-top: 6px;">
+            <div class="format-cell cell-bar" style="flex: 3; height: 44px; font-size: 11px;">Bar Counter + 20 Seats</div>
+            <div class="format-cell cell-tv" style="flex: 1; height: 44px; font-size: 9px;">Screens</div>
+          </div>
+          <div class="format-row" style="margin-top: 6px;">
+            <div class="format-cell" style="background: rgba(174,174,139,0.15); flex: 1; height: 28px; font-size: 9px; color: var(--sh-pale-green);">Kiosk</div>
+            <div class="format-cell" style="background: rgba(174,174,139,0.15); flex: 2; height: 28px; font-size: 9px; color: var(--sh-pale-green);">Merch / Waiting</div>
+            <div class="format-cell" style="background: rgba(174,174,139,0.15); flex: 1; height: 28px; font-size: 9px; color: var(--sh-pale-green);">Entry</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <div class="stat-num" style="font-size: 36px;">100<span style="font-size: 18px;">m²</span></div>
+            <div class="stat-label">Total footprint</div>
+          </div>
+          <div>
+            <div class="stat-num" style="font-size: 36px;">2</div>
+            <div class="stat-label">Simulators min.</div>
+          </div>
+          <div>
+            <div class="stat-num" style="font-size: 36px;">20</div>
+            <div class="stat-label">Bar seats max</div>
+          </div>
+          <div>
+            <div class="stat-num" style="font-size: 36px;">2<span style="font-size: 14px;">FTE</span></div>
+            <div class="stat-label">Staff per shift</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 5 — ECONOMICS
+  ============================= -->
+  <div class="slide" id="s5">
+    <div style="padding: 56px; width: 100%;">
+      <div class="label">Business Model / Modèle Économique</div>
+      <h2>Two Partnership Models</h2>
+      <p class="body" style="margin-top: 8px; max-width: 550px; margin-bottom: 24px;">Swing House offers two complementary structures depending on operator preference and market context.</p>
+
+      <div style="margin-bottom: 12px;">
+        <span class="model-tab active" onclick="switchModel('license', this)">Option A — Brand License</span>
+        <span class="model-tab" onclick="switchModel('jv', this)">Option B — Joint Venture</span>
+      </div>
+
+      <div class="model-content">
+        <div class="model-panel active" id="model-license">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+            <div>
+              <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 16px;">Structure</div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Operator runs the unit</strong><span>Concessionaire assumes full CAPEX and operations</span></div>
+              </div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Swing House provides brand + IP</strong><span>Visual identity, concept, TrackMan partnership, training</span></div>
+              </div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Low risk for Swing House</strong><span>Asset-light expansion, pure IP monetization</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 16px;">Economics (per unit)</div>
+              <div class="econ-row"><span class="econ-key">License Fee</span><span class="econ-val">€15k–25k/year</span></div>
+              <div class="econ-row"><span class="econ-key">Revenue Share</span><span class="econ-val">5–8% of sim revenue</span></div>
+              <div class="econ-row"><span class="econ-key">Setup Fee (one-time)</span><span class="econ-val">€20k–35k</span></div>
+              <div class="econ-row"><span class="econ-key">Estimated Year 1 (SH)</span><span class="econ-val green">€35k–60k/unit</span></div>
+              <div class="econ-row"><span class="econ-key">Swing House CAPEX</span><span class="econ-val green">€0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="model-panel" id="model-jv">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+            <div>
+              <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 16px;">Structure</div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Co-investment model</strong><span>Swing House + operator share CAPEX and P&L</span></div>
+              </div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Shared governance</strong><span>Swing House retains brand standards oversight</span></div>
+              </div>
+              <div class="check-item" style="margin-bottom: 12px;">
+                <div class="check-icon">✓</div>
+                <div class="check-text"><strong>Higher upside</strong><span>Full P&L participation on a profitable unit</span></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 16px;">Economics (per unit / 2 sims)</div>
+              <div class="econ-row"><span class="econ-key">CAPEX (total)</span><span class="econ-val">€180k–250k</span></div>
+              <div class="econ-row"><span class="econ-key">SH Share</span><span class="econ-val">25–40%</span></div>
+              <div class="econ-row"><span class="econ-key">Projected Revenue/Unit</span><span class="econ-val">€350k–500k/year</span></div>
+              <div class="econ-row"><span class="econ-key">EBITDA Margin (target)</span><span class="econ-val">28–35%</span></div>
+              <div class="econ-row"><span class="econ-key">SH Net Income (est.)</span><span class="econ-val green">€35k–70k/unit/yr</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display: flex; gap: 24px;">
+        <div style="font-size: 11px; color: var(--sh-pale-green);">* Projections based on 70% sim occupancy, €30 avg ticket, 18 operating hours/day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 6 — TARGET OPERATORS
+  ============================= -->
+  <div class="slide" id="s6">
+    <div style="padding: 56px; width: 100%;">
+      <div class="label" style="color: var(--sh-orange);">Target Partners</div>
+      <h2 style="color: var(--sh-dark-green);">Who We're Talking To</h2>
+      <p class="body" style="margin-top: 8px; max-width: 600px; margin-bottom: 24px; color: var(--sh-dark-green);">Three global concession operators hold the majority of premium terminal F&B rights worldwide. Our entry strategy targets their concept development teams.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div class="operator-card">
+          <div class="op-name">Lagardère Travel Retail</div>
+          <div class="op-meta">Paris HQ · 200+ airports · 5,000+ outlets</div>
+          <div class="op-body">Market leader in travel retail. Active search for post-Covid experiential differentiators. Present at IST, DXB, LHR, CDG. Contact: Concept Development dept.</div>
+          <div><span class="op-tag">Priority Target</span></div>
+        </div>
+        <div class="operator-card">
+          <div class="op-name">SSP Group</div>
+          <div class="op-meta">London HQ · 35 countries · F&B specialist</div>
+          <div class="op-body">Food travel experts, strong bar & sports bar track record. Key presence at SIN Changi, LHR T5, major European hubs. Open to branded concept partnerships.</div>
+          <div><span class="op-tag">Priority Target</span></div>
+        </div>
+        <div class="operator-card">
+          <div class="op-name">HMSHost / Autogrill</div>
+          <div class="op-meta">US + Middle East · Autogrill group</div>
+          <div class="op-body">Strong presence in US, DXB, DOH. Parent company Autogrill pursuing growth in experiential segments. North America + Gulf expansion angle.</div>
+          <div><span class="op-tag" style="background: rgba(174,174,139,0.2); color: var(--sh-pale-green);">Phase 2</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; background: var(--sh-dark-green); border-radius: 4px; padding: 20px 28px; display: flex; align-items: center; gap: 24px;">
+        <div>
+          <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sh-orange); margin-bottom: 6px;">Key Event — First Contact Opportunity</div>
+          <div style="font-size: 15px; font-weight: 700; text-transform: uppercase;">TFWA World Exhibition — Cannes, October 2026</div>
+        </div>
+        <div style="margin-left: auto; text-align: right;">
+          <div style="font-size: 11px; color: var(--sh-pale-green); text-transform: uppercase; letter-spacing: 0.1em;">All 3 operators present</div>
+          <div style="font-size: 11px; color: var(--sh-pale-green);">Networking-first format</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 7 — ROADMAP
+  ============================= -->
+  <div class="slide" id="s7">
+    <div class="col-left" style="padding: 56px;">
+      <div class="label">Roadmap</div>
+      <h2>From Chamonix<br>to the World.</h2>
+      <div class="divider"></div>
+      <p class="body" style="max-width: 340px;">
+        Chamonix is the proof of concept. Every month of data we collect is an argument in the pitch deck.
+      </p>
+      <p style="font-size: 12px; color: var(--sh-pale-green); margin-top: 8px; font-style: italic; max-width: 340px; line-height: 1.6;">Chamonix est le proof of concept. Chaque mois de data est un argument supplémentaire pour le pitch.</p>
+
+      <div style="margin-top: 32px;">
+        <div class="progress-row">
+          <div class="progress-label" style="color: var(--sh-beige);">Brand strength</div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 30%;"></div></div>
+          <div class="progress-val">30%</div>
+        </div>
+        <div class="progress-row">
+          <div class="progress-label" style="color: var(--sh-beige);">Data & proof</div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
+          <div class="progress-val">20%</div>
+        </div>
+        <div class="progress-row">
+          <div class="progress-label" style="color: var(--sh-beige);">Operator pitch</div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 5%;"></div></div>
+          <div class="progress-val">5%</div>
+        </div>
+        <div style="font-size: 10px; color: var(--sh-pale-green); margin-top: 8px; letter-spacing: 0.08em; text-transform: uppercase;">Current readiness — growing</div>
+      </div>
+    </div>
+    <div class="col-right" style="padding: 56px 56px 56px 0;">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-date">Now — Q3 2026</div>
+          <div class="tl-title">Build the proof of concept</div>
+          <div class="tl-body">Document Chamonix performance (rev/sim/hour, occupancy, international guest %). Build Airport Concept deck. Grow Instagram to 5k+.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">Q4 2026 — TFWA Cannes</div>
+          <div class="tl-title">First operator contacts</div>
+          <div class="tl-body">Attend TFWA World Exhibition. Target Lagardère + SSP concept teams. Initiate exploratory conversations. No hard pitch — relationship first.</div>
+        </div>
+        <div class="tl-item muted-item">
+          <div class="tl-date">H1 2027</div>
+          <div class="tl-title">LOI or MOU with first operator</div>
+          <div class="tl-body">Letter of Intent with at least one Tier 1 operator. Define pilot hub (Istanbul IST preferred). Finalize unit design with operator constraints.</div>
+        </div>
+        <div class="tl-item muted-item">
+          <div class="tl-date">H2 2027 – H1 2028</div>
+          <div class="tl-title">Pilot unit launch</div>
+          <div class="tl-body">First Swing House Airport unit opens. 12-month performance monitoring. Activate replication playbook for units 2–5.</div>
+        </div>
+        <div class="tl-item muted-item">
+          <div class="tl-date">2029+</div>
+          <div class="tl-title">Multi-hub rollout</div>
+          <div class="tl-body">Target 5–10 units across Tier 1 hubs. License model deployed at scale. Swing House becomes a global travel retail brand.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SLIDE 8 — CLOSE
+  ============================= -->
+  <div class="slide" id="s8">
+    <div class="s8-left">
+      <div class="label" style="margin-bottom: 24px;">Let's Talk / Parlons-en</div>
+      <h1 style="color: var(--sh-beige); line-height: 0.9;">The Future<br>of Golf<br><span style="color: var(--sh-orange);">Is In Transit.</span></h1>
+      <div class="divider" style="margin: 32px 0;"></div>
+      <p class="body" style="max-width: 420px; font-size: 15px; line-height: 1.7; margin-bottom: 8px;">
+        Swing House is looking for forward-thinking concession partners ready to bring a genuinely new experience to premium international terminals.
+      </p>
+      <p style="font-size: 13px; color: var(--sh-pale-green); font-style: italic; max-width: 420px; line-height: 1.6;">
+        Swing House recherche des concessionnaires visionnaires prêts à apporter une expérience réellement nouvelle dans les terminaux internationaux premium.
+      </p>
+      <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <span class="badge">Brand License</span>
+        <span class="badge">Joint Venture</span>
+        <span class="badge-outline badge">Pilot Discussion Open</span>
+      </div>
+    </div>
+    <div class="s8-right">
+      <div>
+        <div style="font-family: 'Montserrat Alternates', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sh-pale-green); margin-bottom: 24px;">Contact</div>
+        <div class="contact-item" style="margin-bottom: 24px;">
+          <strong>Founder & President</strong>
+          <span>Sam</span>
+        </div>
+        <div class="contact-item" style="margin-bottom: 24px;">
+          <strong>Brand</strong>
+          <span>Swing House SAS</span>
+        </div>
+        <div class="contact-item" style="margin-bottom: 24px;">
+          <strong>Location</strong>
+          <span>Chamonix-Mont-Blanc<br>74400, France</span>
+        </div>
+        <div class="contact-item" style="margin-bottom: 24px;">
+          <strong>Web</strong>
+          <span>swinghouse-chamonix.com</span>
+        </div>
+        <div class="contact-item">
+          <strong>Instagram</strong>
+          <span>@swinghouse.chx</span>
+        </div>
+      </div>
+      <div style="border-top: 1px solid rgba(240,236,229,0.1); padding-top: 24px;">
+        <div style="font-size: 10px; color: rgba(240,236,229,0.35); letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.8;">
+          Confidential<br>For Partnership Discussion Only<br>© Swing House SAS 2026
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>←</button>
+  <div class="nav-dots" id="navDots"></div>
+  <span class="nav-counter" id="counter">1 / 8</span>
+  <button class="nav-btn" id="nextBtn" onclick="navigate(1)">→</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  // Build dots
+  const dotsContainer = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+    document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function navigate(dir) {
+    const next = current + dir;
+    if (next >= 0 && next < total) goTo(next);
+  }
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') navigate(1);
+    if (e.key === 'ArrowLeft') navigate(-1);
+  });
+
+  // Tab switcher for economics slide
+  function switchModel(model, tab) {
+    document.querySelectorAll('.model-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.model-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('model-' + model).classList.add('active');
+  }
+</script>
+</body>
+</html>
